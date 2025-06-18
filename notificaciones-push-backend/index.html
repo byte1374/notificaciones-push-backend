@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Portal del Supermercado</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-messaging.js"></script>
+</head>
+<body>
+  <h1>Bienvenido al WiFi del Supermercado</h1>
+  <button onclick="suscribirse()">📲 Activar notificaciones</button>
+
+  <script>
+    // Configuración de tu app Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyCivT-KOZ_R5k3HGinsRHW_O29khMYdWBw", // <- lo completás con lo que te dio Firebase
+      authDomain: "notificaciones-super.firebaseapp.com",
+      projectId: "notificaciones-super",
+      messagingSenderId: "1060951750396",
+      appId: "1:1060951750396:web:12d7b3db78a226796dc979" // <- lo completás con tu App ID real
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const messaging = firebase.messaging();
+
+    async function suscribirse() {
+      try {
+        const token = await messaging.getToken({
+          vapidKey: "BHmNPPTGsile0TlLtAmH68dvTHXPyts_hdmJ78nWsW6QFxGBRTw0IcpkU7AaN1ycq0ANTnWlACmaQVasKTYjQ-I"
+        });
+
+        if (token) {
+          console.log("✅ Token FCM recibido:", token);
+          // Enviarlo al backend
+          await fetch("https://TU-BACKEND.onrender.com/registrar-token", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token })
+          });
+          alert("Te suscribiste a las notificaciones 🎉");
+        } else {
+          console.warn("⚠️ No se pudo obtener el token");
+        }
+      } catch (error) {
+        console.error("❌ Error al obtener token:", error);
+      }
+    }
+
+    // Mostrar notificaciones si llegan mientras el sitio está abierto
+    messaging.onMessage((payload) => {
+      alert("📢 " + payload.notification.title + ": " + payload.notification.body);
+    });
+  </script>
+</body>
+</html>
