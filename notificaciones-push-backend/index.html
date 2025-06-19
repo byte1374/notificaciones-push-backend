@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>Bienvenido a Borreguito</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-messaging.js"></script>
   <style>
@@ -17,7 +16,6 @@
       align-items: center;
       height: 100vh;
     }
-
     .card {
       background: #f8d7a4;
       padding: 40px;
@@ -25,22 +23,13 @@
       text-align: center;
       box-shadow: 0 0 10px rgba(0,0,0,0.2);
     }
-
     .card img {
       width: 120px;
       height: auto;
       margin-bottom: 20px;
     }
-
-    h1 {
-      color: #006400;
-    }
-
-    p {
-      font-size: 1rem;
-      margin-bottom: 30px;
-    }
-
+    h1 { color: #006400; }
+    p { font-size: 1rem; margin-bottom: 30px; }
     button {
       margin: 10px;
       padding: 10px 20px;
@@ -51,10 +40,7 @@
       cursor: pointer;
       font-size: 1rem;
     }
-
-    button:hover {
-      background: #005d00;
-    }
+    button:hover { background: #005d00; }
   </style>
 </head>
 <body>
@@ -70,7 +56,6 @@
   </div>
 
   <script>
-    // Configuración Firebase (reemplazá los valores si aún no los completaste)
     const firebaseConfig = {
       apiKey: "AIzaSyCivT-KOZ_R5k3HGinsRHW_O29khMYdWBw",
       authDomain: "notificaciones-super.firebaseapp.com",
@@ -80,36 +65,59 @@
     };
 
     const app = firebase.initializeApp(firebaseConfig);
-const messaging = firebase.messaging();
+    const messaging = firebase.messaging();
 
-// 🔄 Registrar el Service Worker ANTES de obtener el token
-navigator.serviceWorker.register("firebase-messaging-sw.js")
-  .then((registration) => {
-    messaging.useServiceWorker(registration);
-    console.log("✅ Service worker registrado correctamente");
-  }).catch((err) => {
-    console.error("❌ Error al registrar el service worker:", err);
-  });
-
-async function suscribirse() {
-  try {
-    const token = await messaging.getToken({
-      vapidKey: "BHmNPPTGsile0TlLtAmH68dvTHXPyts_hdmJ78nWsW6QFxGBRTw0IcpkU7AaN1ycq0ANTnWlACmaQVasKTYjQ-I"
-    });
-
-    if (token) {
-      console.log("✅ Token FCM recibido:", token);
-      await fetch("https://notificaciones-push-backend.onrender.com/registrar-token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token })
+    // Registrar Service Worker antes de obtener el token
+    navigator.serviceWorker.register("firebase-messaging-sw.js")
+      .then((registration) => {
+        messaging.useServiceWorker(registration);
+        console.log("✅ Service worker registrado correctamente");
+      }).catch((err) => {
+        console.error("❌ Error al registrar el service worker:", err);
       });
-      alert("🎉 Te suscribiste a las notificaciones de Borreguito");
-    } else {
-      alert("No se pudo obtener la oferta.");
+
+    async function suscribirse() {
+      try {
+        const token = await messaging.getToken({
+          vapidKey: "BHmNPPTGsile0TlLtAmH68dvTHXPyts_hdmJ78nWsW6QFxGBRTw0IcpkU7AaN1ycq0ANTnWlACmaQVasKTYjQ-I"
+        });
+
+        if (token) {
+          console.log("✅ Token FCM recibido:", token);
+          await fetch("https://notificaciones-push-backend.onrender.com/registrar-token", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token })
+          });
+
+          // 🔄 Redirigir al portal cautivo (reemplazá por tu URL real si usás pfSense)
+          window.location.href = "http://10.0.0.1:8002"; // ← poné la URL de redirección deseada
+        } else {
+          alert("No se pudo obtener la oferta.");
+        }
+      } catch (error) {
+        console.error("❌ Error al obtener token:", error);
+        alert("No se pudo obtener la oferta.");
+      }
     }
-  } catch (error) {
-    console.error("❌ Error al obtener token:", error);
-    alert("No se pudo obtener la oferta.");
-  }
-}
+
+    function verOfertas() {
+      Notification.requestPermission().then((permission) => {
+        if (permission === "granted") {
+          alert("✅ Notificaciones activadas. ¡Te llegarán nuestras ofertas!");
+        } else if (permission === "denied") {
+          alert("❌ Denegaste las notificaciones.");
+        } else {
+          alert("⚠️ No se activaron las notificaciones.");
+        }
+      });
+    }
+
+    // Mostrar notificaciones mientras está abierta la pestaña
+    messaging.onMessage(payload => {
+      alert("📢 " + payload.notification.title + ": " + payload.notification.body);
+    });
+  </script>
+</body>
+</html>
+
