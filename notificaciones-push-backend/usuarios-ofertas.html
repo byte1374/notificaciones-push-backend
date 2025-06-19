@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Usuarios que aceptaron ofertas</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f4f4f4;
+      padding: 40px;
+    }
+
+    h1 {
+      color: #006400;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      max-width: 800px;
+    }
+
+    li {
+      background: #fff;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 6px;
+      box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+      font-size: 0.9rem;
+      word-break: break-all;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin-bottom: 20px;
+      background: #007800;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #005d00;
+    }
+  </style>
+</head>
+<body>
+  <h1>🟢 Tokens que aceptaron recibir ofertas</h1>
+  <button onclick="cargarTokens()">🔄 Actualizar lista</button>
+  <ul id="lista"></ul>
+
+  <script>
+    async function cargarTokens() {
+      const lista = document.getElementById("lista");
+      lista.innerHTML = "<li>Cargando...</li>";
+
+      try {
+        const res = await fetch("https://notificaciones-push-backend.onrender.com/aceptaron");
+        const data = await res.json();
+
+        if (data && Array.isArray(data.aceptaron)) {
+          lista.innerHTML = "";
+
+          if (data.aceptaron.length === 0) {
+            lista.innerHTML = "<li>No hay usuarios que hayan aceptado aún.</li>";
+          } else {
+            data.aceptaron.forEach(token => {
+              const li = document.createElement("li");
+              li.textContent = token;
+              lista.appendChild(li);
+            });
+          }
+        } else {
+          lista.innerHTML = "<li>Error al cargar los datos.</li>";
+        }
+      } catch (err) {
+        console.error("Error al obtener tokens:", err);
+        lista.innerHTML = "<li>❌ Error de conexión con el backend.</li>";
+      }
+    }
+
+    cargarTokens();
+  </script>
+</body>
+</html>
+
