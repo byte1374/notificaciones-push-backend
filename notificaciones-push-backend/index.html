@@ -2,54 +2,114 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Portal del Supermercado</title>
+  <title>Bienvenido a Borreguito</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-messaging.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #35b33f;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .card {
+      background: #f8d7a4;
+      padding: 40px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+
+    .card img {
+      width: 120px;
+      height: auto;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      color: #006400;
+    }
+
+    p {
+      font-size: 1rem;
+      margin-bottom: 30px;
+    }
+
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      background: #007800;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    button:hover {
+      background: #005d00;
+    }
+  </style>
 </head>
 <body>
-  <h1>Bienvenido al WiFi del Supermercado</h1>
-  <button onclick="suscribirse()">📲 Activar notificaciones</button>
+  <div class="card">
+    <img src="logo.png" alt="Borreguito logo" />
+    <h1>¡Bienvenidos a Borreguito!</h1>
+    <p>
+      Toque en el botón avanzar, y no solo disfrute de nuestro internet,<br>
+      sino también de las ofertas que le llegarán semanalmente.
+    </p>
+    <button onclick="suscribirse()">Avanzar</button>
+    <button onclick="verOfertas()">Ver Ofertas</button>
+  </div>
 
   <script>
-    // Configuración de tu app Firebase
+    // Configuración Firebase (reemplazá los valores si aún no los completaste)
     const firebaseConfig = {
-      apiKey: "AIzaSyCivT-KOZ_R5k3HGinsRHW_O29khMYdWBw", // <- lo completás con lo que te dio Firebase
+      apiKey: "AIzaSyCivT-KOZ_R5k3HGinsRHW_O29khMYdWBw",
       authDomain: "notificaciones-super.firebaseapp.com",
       projectId: "notificaciones-super",
       messagingSenderId: "1060951750396",
-      appId: "1:1060951750396:web:12d7b3db78a226796dc979" // <- lo completás con tu App ID real
+      appId: "1:1060951750396:web:12d7b3db78a226796dc979"
     };
 
     const app = firebase.initializeApp(firebaseConfig);
-    const messaging = firebase.messaging();
+const messaging = firebase.messaging();
 
-    async function suscribirse() {
-      try {
-        const token = await messaging.getToken({
-          vapidKey: "BHmNPPTGsile0TlLtAmH68dvTHXPyts_hdmJ78nWsW6QFxGBRTw0IcpkU7AaN1ycq0ANTnWlACmaQVasKTYjQ-I"
-        });
+// 🔄 Registrar el Service Worker ANTES de obtener el token
+navigator.serviceWorker.register("firebase-messaging-sw.js")
+  .then((registration) => {
+    messaging.useServiceWorker(registration);
+    console.log("✅ Service worker registrado correctamente");
+  }).catch((err) => {
+    console.error("❌ Error al registrar el service worker:", err);
+  });
 
-        if (token) {
-          console.log("✅ Token FCM recibido:", token);
-          // Enviarlo al backend
-          await fetch("https://TU-BACKEND.onrender.com/registrar-token", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ token })
-          });
-          alert("Te suscribiste a las notificaciones 🎉");
-        } else {
-          console.warn("⚠️ No se pudo obtener el token");
-        }
-      } catch (error) {
-        console.error("❌ Error al obtener token:", error);
-      }
-    }
-
-    // Mostrar notificaciones si llegan mientras el sitio está abierto
-    messaging.onMessage((payload) => {
-      alert("📢 " + payload.notification.title + ": " + payload.notification.body);
+async function suscribirse() {
+  try {
+    const token = await messaging.getToken({
+      vapidKey: "BHmNPPTGsile0TlLtAmH68dvTHXPyts_hdmJ78nWsW6QFxGBRTw0IcpkU7AaN1ycq0ANTnWlACmaQVasKTYjQ-I"
     });
-  </script>
-</body>
-</html>
+
+    if (token) {
+      console.log("✅ Token FCM recibido:", token);
+      await fetch("https://notificaciones-push-backend.onrender.com/registrar-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token })
+      });
+      alert("🎉 Te suscribiste a las notificaciones de Borreguito");
+    } else {
+      alert("No se pudo obtener la oferta.");
+    }
+  } catch (error) {
+    console.error("❌ Error al obtener token:", error);
+    alert("No se pudo obtener la oferta.");
+  }
+}

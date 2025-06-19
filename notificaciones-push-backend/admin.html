@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Enviar promoción</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f2f2f2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+    }
+
+    h1 {
+      color: #006400;
+    }
+
+    textarea {
+      width: 100%;
+      max-width: 500px;
+      height: 100px;
+      margin-bottom: 20px;
+      font-size: 1rem;
+      padding: 10px;
+    }
+
+    button {
+      padding: 10px 30px;
+      font-size: 1rem;
+      background: #007800;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #005d00;
+    }
+
+    #resultado {
+      margin-top: 20px;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>📢 Enviar notificación a Borreguito</h1>
+  <textarea id="mensaje" placeholder="Escribí tu promoción..."></textarea>
+  <button onclick="enviar()">Enviar</button>
+  <div id="resultado"></div>
+
+  <script>
+    async function enviar() {
+      const texto = document.getElementById("mensaje").value.trim();
+      const resultado = document.getElementById("resultado");
+
+      if (!texto) {
+        resultado.innerText = "⚠️ Ingresá un mensaje antes de enviar.";
+        return;
+      }
+
+      try {
+        const respuesta = await fetch("https://notificaciones-push-backend.onrender.com/enviar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mensaje: texto })
+        });
+
+        if (respuesta.ok) {
+          resultado.innerText = "✅ Notificación enviada correctamente.";
+        } else {
+          resultado.innerText = "❌ Error al enviar: " + (await respuesta.text());
+        }
+      } catch (error) {
+        resultado.innerText = "❌ Error al conectarse al backend.";
+        console.error(error);
+      }
+    }
+  </script>
+</body>
+</html>
