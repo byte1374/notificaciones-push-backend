@@ -67,3 +67,10 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# 🔐 Archivos de clave privada de Firebase
+notificaciones-super-firebase-adminsdk-*.json
+*.service-account.json
+*.firebase-adminsdk.json
+
+
