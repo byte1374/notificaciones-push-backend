@@ -90,7 +90,7 @@
           });
         }
 
-        window.location.href = "http://10.0.0.1:8002"; // tu portal cautivo pfSense
+        window.location.href = "http://10.0.0.1:8002"; // portal cautivo pfSense
       } catch (error) {
         console.error("❌ Error al obtener token:", error);
         window.location.href = "http://10.0.0.1:8002";
@@ -112,14 +112,29 @@
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ token })
             });
+
+            // Mostrar oferta si hay una
+            const res = await fetch("https://notificaciones-push-backend.onrender.com/ultimo");
+            const data = await res.json();
+
+            if (data && data.mensaje) {
+              new Notification("🛒 Oferta especial de Borreguito", {
+                body: data.mensaje,
+                icon: "logo.png"
+              });
+            } else {
+              alert("⚠️ No hay ofertas nuevas disponibles.");
+            }
           }
+        } else if (permission === "denied") {
+          alert("❌ Denegaste las notificaciones.");
+        } else {
+          alert("⚠️ No se activaron las notificaciones.");
         }
       } catch (err) {
         console.warn("⚠️ No se pudo completar la acción:", err);
+        alert("⚠️ No se pudo completar la acción.");
       }
-
-      // Redirigir pase lo que pase
-      window.location.href = "http://10.0.0.1:8002"; // pfSense o página de navegación
     }
 
     messaging.onMessage(payload => {
@@ -128,4 +143,5 @@
   </script>
 </body>
 </html>
+
 
