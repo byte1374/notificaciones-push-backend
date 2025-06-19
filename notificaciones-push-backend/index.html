@@ -67,7 +67,6 @@
     const app = firebase.initializeApp(firebaseConfig);
     const messaging = firebase.messaging();
 
-    // Registrar Service Worker
     navigator.serviceWorker.register("firebase-messaging-sw.js")
       .then((registration) => {
         messaging.useServiceWorker(registration);
@@ -90,7 +89,7 @@
             body: JSON.stringify({ token })
           });
 
-          window.location.href = "http://10.0.0.1:8002"; // tu portal cautivo pfSense
+          window.location.href = "http://10.0.0.1:8002";
         } else {
           alert("No se pudo obtener la oferta.");
         }
@@ -106,7 +105,24 @@
       if (permission === "granted") {
         alert("✅ Notificaciones activadas. ¡Te llegarán nuestras ofertas!");
 
-        // Consultar último mensaje enviado desde el backend
+        // Obtener token y marcar aceptación
+        try {
+          const token = await messaging.getToken({
+            vapidKey: "BHmNPPTGsile0TlLtAmH68dvTHXPyts_hdmJ78nWsW6QFxGBRTw0IcpkU7AaN1ycq0ANTnWlACmaQVasKTYjQ-I"
+          });
+
+          if (token) {
+            await fetch("https://notificaciones-push-backend.onrender.com/marcar-aceptado", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ token })
+            });
+          }
+        } catch (err) {
+          console.warn("⚠️ No se pudo registrar aceptación:", err);
+        }
+
+        // Mostrar última promoción
         try {
           const res = await fetch("https://notificaciones-push-backend.onrender.com/ultimo");
           const data = await res.json();
@@ -123,6 +139,7 @@
           console.error("❌ Error consultando la oferta:", err);
           alert("❌ No se pudo obtener la oferta.");
         }
+
       } else if (permission === "denied") {
         alert("❌ Denegaste las notificaciones.");
       } else {
@@ -130,7 +147,6 @@
       }
     }
 
-    // También mostrar en alert si llega una notificación mientras navega
     messaging.onMessage(payload => {
       alert("📢 " + payload.notification.title + ": " + payload.notification.body);
     });

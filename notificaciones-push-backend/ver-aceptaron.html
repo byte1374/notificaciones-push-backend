@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Tokens Aceptados</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f2f2f2;
+      padding: 30px;
+    }
+
+    h1 {
+      color: #006400;
+    }
+
+    #lista {
+      margin-top: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .token {
+      font-family: monospace;
+      margin: 5px 0;
+      padding: 5px;
+      background: #eee;
+      border-radius: 4px;
+      word-break: break-all;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 8px 20px;
+      background: #007800;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #005d00;
+    }
+
+    #copiado {
+      margin-top: 10px;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <h1>📋 Clientes que aceptaron notificaciones</h1>
+  <div id="lista">Cargando...</div>
+  <button onclick="copiarTokens()">📎 Copiar todos</button>
+  <div id="copiado"></div>
+
+  <script>
+    async function cargarTokens() {
+      try {
+        const res = await fetch("https://notificaciones-push-backend.onrender.com/aceptaron");
+        const data = await res.json();
+        const lista = document.getElementById("lista");
+
+        if (data.aceptaron && data.aceptaron.length > 0) {
+          lista.innerHTML = "";
+          data.aceptaron.forEach(token => {
+            const div = document.createElement("div");
+            div.className = "token";
+            div.innerText = token;
+            lista.appendChild(div);
+          });
+        } else {
+          lista.innerHTML = "🚫 No hay tokens marcados como aceptados aún.";
+        }
+      } catch (error) {
+        document.getElementById("lista").innerText = "❌ Error al cargar la lista.";
+        console.error(error);
+      }
+    }
+
+    async function copiarTokens() {
+      const tokens = Array.from(document.querySelectorAll(".token")).map(t => t.innerText).join("\n");
+      try {
+        await navigator.clipboard.writeText(tokens);
+        document.getElementById("copiado").innerText = "✅ Tokens copiados al portapapeles.";
+      } catch (err) {
+        document.getElementById("copiado").innerText = "❌ No se pudo copiar.";
+      }
+    }
+
+    cargarTokens();
+  </script>
+</body>
+</html>
