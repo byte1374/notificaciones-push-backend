@@ -67,7 +67,7 @@
     const app = firebase.initializeApp(firebaseConfig);
     const messaging = firebase.messaging();
 
-    // Registrar Service Worker antes de obtener el token
+    // Registrar Service Worker
     navigator.serviceWorker.register("firebase-messaging-sw.js")
       .then((registration) => {
         messaging.useServiceWorker(registration);
@@ -90,8 +90,7 @@
             body: JSON.stringify({ token })
           });
 
-          // 🔄 Redirigir al portal cautivo (reemplazá por tu URL real si usás pfSense)
-          window.location.href = "http://10.0.0.1:8002"; // ← poné la URL de redirección deseada
+          window.location.href = "http://10.0.0.1:8002"; // tu portal cautivo pfSense
         } else {
           alert("No se pudo obtener la oferta.");
         }
@@ -101,19 +100,37 @@
       }
     }
 
-    function verOfertas() {
-      Notification.requestPermission().then((permission) => {
-        if (permission === "granted") {
-          alert("✅ Notificaciones activadas. ¡Te llegarán nuestras ofertas!");
-        } else if (permission === "denied") {
-          alert("❌ Denegaste las notificaciones.");
-        } else {
-          alert("⚠️ No se activaron las notificaciones.");
+    async function verOfertas() {
+      const permission = await Notification.requestPermission();
+
+      if (permission === "granted") {
+        alert("✅ Notificaciones activadas. ¡Te llegarán nuestras ofertas!");
+
+        // Consultar último mensaje enviado desde el backend
+        try {
+          const res = await fetch("https://notificaciones-push-backend.onrender.com/ultimo");
+          const data = await res.json();
+
+          if (data && data.mensaje) {
+            new Notification("🛒 Oferta especial de Borreguito", {
+              body: data.mensaje,
+              icon: "logo.png"
+            });
+          } else {
+            alert("⚠️ No hay ofertas nuevas disponibles.");
+          }
+        } catch (err) {
+          console.error("❌ Error consultando la oferta:", err);
+          alert("❌ No se pudo obtener la oferta.");
         }
-      });
+      } else if (permission === "denied") {
+        alert("❌ Denegaste las notificaciones.");
+      } else {
+        alert("⚠️ No se activaron las notificaciones.");
+      }
     }
 
-    // Mostrar notificaciones mientras está abierta la pestaña
+    // También mostrar en alert si llega una notificación mientras navega
     messaging.onMessage(payload => {
       alert("📢 " + payload.notification.title + ": " + payload.notification.body);
     });
