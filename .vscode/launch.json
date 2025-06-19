@@ -5,6 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Attach to Edge",
+            "port": 9222,
+            "request": "attach",
+            "type": "msedge",
+            "webRoot": "${workspaceFolder}"
+        },
+        {
             "name": "Launch Edge",
             "request": "launch",
             "type": "msedge",
@@ -18,11 +25,12 @@
             "type": "msedge",
             "webRoot": "${workspaceFolder}"
         },
-        {
-            "type": "msedge",
-            "request": "launch",
-            "name": "Open admin.html",
-            "file": "c:\\Users\\Jorge\\Documents\\push-free\\notificaciones-push-backend\\admin.html"
-        }
+       {
+  "type": "msedge",
+  "request": "launch",
+  "name": "Abrir usuarios-ofertas.html",
+  "file": "c:\\Users\\Jorge\\Documents\\push-free\\notificaciones-push-backend\\usuarios-ofertas.html"
+}
+
     ]
 }

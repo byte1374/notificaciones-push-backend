@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Enviar promoción a Borreguito</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f9f9f9;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      color: #006400;
+      margin-bottom: 20px;
+    }
+
+    textarea {
+      width: 100%;
+      max-width: 600px;
+      height: 120px;
+      font-size: 1rem;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 10px 30px;
+      font-size: 1rem;
+      background: #007800;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #005d00;
+    }
+
+    #resultado {
+      margin-top: 20px;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>📢 Enviar promoción a Borreguito</h1>
+  <textarea id="mensaje" placeholder="Escribí la promoción para los clientes..."></textarea>
+  <button onclick="enviar()">Enviar</button>
+  <div id="resultado"></div>
+
+  <script>
+    async function enviar() {
+      const mensaje = document.getElementById("mensaje").value.trim();
+      const resultado = document.getElementById("resultado");
+
+      if (!mensaje) {
+        resultado.textContent = "⚠️ Tenés que escribir una promoción primero.";
+        return;
+      }
+
+      try {
+        const respuesta = await fetch("https://notificaciones-push-backend.onrender.com/enviar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mensaje })
+        });
+
+        if (respuesta.ok) {
+          resultado.textContent = "✅ Notificación enviada a todos los tokens registrados.";
+        } else {
+          resultado.textContent = "❌ Error al enviar: " + await respuesta.text();
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        resultado.textContent = "❌ Error de conexión con el backend.";
+      }
+    }
+  </script>
+</body>
+</html>
